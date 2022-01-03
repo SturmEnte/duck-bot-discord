@@ -1,4 +1,5 @@
 import { Client, GuildMember, VoiceState } from "discord.js";
+import { secondsToMinutes, secondsToMilliseconds } from "../util/timeConverter";
 
 export default function (client: Client) {
 	client.on("voiceStateUpdate", voiceStateUpdate);
@@ -29,7 +30,9 @@ function voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
 		newState.selfMute === true
 	) {
 		newState.member?.send(
-			"You will be moved to the afk channel in 5 Minutes unless you unmute your self"
+			"You will be moved to the afk channel in " +
+				secondsToMinutes(newState.guild.afkTimeout) +
+				" Minutes unless you unmute your self"
 		);
 
 		setTimeout(async () => {
@@ -44,7 +47,7 @@ function voiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
 				member.voice.setChannel(member.guild.afkChannel);
 				member.send("You where moved into the afk channel because you where muted to long");
 			}
-		}, 1000 * 60 * 5);
+		}, secondsToMilliseconds(newState.guild.afkTimeout));
 	}
 
 	// Move the user back to the afk channel if the user is afk and leaves it
